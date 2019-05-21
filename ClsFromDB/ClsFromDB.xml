@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<template title="Sample,Table Interface" 
+		subdir="[#DB_NAME#][!LOWER!]\java\db_if\"
+		filename="[#TABLE_NAME#][!LOWER!].java"
+		dbnametype="firstupper"
+		tablenametype="firstupper"
+		fieldnametype="lower"
+		language="java">
+		<field id="select" addwhilenotend=",">[#FIELD_NAME#][!UPPER!]</field>
+		<field id="insertvalue" addwhilenotend=",">? </field>
+		<field id="define">	protected [#FIELD_TYPE#] [#FIELD_NAME#] = [#FIELD_VALUE_INIT#];	//[#FIELD_COMMENT#]
+</field>
+		<field id="setval">		[#FIELD_NAME#] = [#FIELD_VALUE_INIT#];	//[#FIELD_COMMENT#]
+</field>
+		<field id="setget">	/**
+	 * [#FIELD_NAME#]の取得<br/>
+	 * [#FIELD_COMMENT_EXT#]<br/>
+	 * @return [#FIELD_NAME#]:[#FIELD_TYPE#]型
+	 */
+	public [#FIELD_TYPE#] get[#FIELD_NAME#][!FIRSTUPPER!]() {
+		return [#FIELD_NAME#];
+	}
+
+	/**
+	 * [#FIELD_NAME#]の設定<br/>
+	 * [#FIELD_COMMENT_EXT#]<br/>
+	 * @param [#FIELD_NAME#]:[#FIELD_TYPE#]型
+	 */
+	public void set[#FIELD_NAME#][!FIRSTUPPER!]([#FIELD_TYPE#] value) {
+		this.[#FIELD_NAME#] = value;
+	}
+
+</field>
+		<main><![CDATA[/**
+ * プログラムＩＤ：[#TABLE_NAME#][!FIRSTUPPER!].java
+ * プログラム名称：[#TABLE_COMMENT#]DataBean
+ * 処理概要　　　：
+ * 改版履歴　　　：[#CREATE_DATE#]　ver[#CREATE_VERSION#]  [#CREATE_AUTHOR#]        新規登録
+ */
+package jp.co.[#DB_NAME#][!FIRSTUPPER!];
+
+import java.io.Serializable;
+
+public class [#TABLE_NAME#][!FIRSTUPPER!] implements Serializable {
+
+	//メンバ変数
+	public strSelect = "SELECT [#CLASS_FIELD_select#] FROM [#TABLE_NAME#][!UPPER!]";
+	public strInsert = "INSERT INTO [#TABLE_NAME#][!UPPER!] ( [#CLASS_FIELD_select#] ) VALUES ( [#CLASS_FIELD_insertvalue#] )";
+[#CLASS_FIELD_define#]
+
+	/**
+	 *
+	 * [#TABLE_NAME#][!FIRSTUPPER!]クラスの標準コンストラクタ
+	 * @param なし
+	 *
+	 */
+	public [#TABLE_NAME#][!FIRSTUPPER!]() {
+	}
+
+	/**
+	 *
+	 * 終了処理
+	 * @param なし
+	 *
+	 */
+	public void finalize() {
+		clear();
+	}
+
+	/**
+	 *
+	 * メンバ変数を初期化します
+	 * @param なし
+	 *
+	 */
+	public void clear() {
+[#CLASS_FIELD_setval#]
+	}
+
+[#CLASS_FIELD_setget#]
+}
+]]></main>
+	</template>
+
+
+
+	<template title="Sample,HTML 一覧画面" 
+		subdir="[#DB_NAME#][!LOWER!]\html\"
+		filename="[#TABLE_NAME#][!LOWER!].html"
+		language="html">
+		<main><![CDATA[<HTML>
+<HEAD>
+<title>HTML 一覧画面</title>
+	<meta http-equiv="Content-type" content="text/html; charset=Shift_JIS" />
+</HEAD>
+<BODY>
+
+<!--■■■ コード一覧表 ■■■-->
+<TABLE style="table-layout:fixed;word-break:break-all;" ALIGN="center" CELLPADDING="3" class="list" ID="list">
+<!--■■■ ヘッダー ■■■-->
+	<tr>
+[!JS!]
+//head
+for(var i = 0; i < js.field.length; i++){
+	var name = js.field[i]['FIELD_NAME'];
+	var shortname = name.toLowerCase();
+	if(shortname.IndexOf('_') > 0){
+		shortname = shortname.substring(shortname.IndexOf('_') + 1);
+	}
+	if(shortname.lastIndexOf('_') > 0){
+		shortname = shortname.substring(0, shortname.lastIndexOf('_'));
+	}
+	if(shortname != 'insert' && shortname != 'update'){
+		var cmt = js.field[i]['FIELD_COMMENT'];
+		var maxlen = js.field[i]['FIELD_SHOW_LENGTH'];
+		var width = '0' + maxlen;
+		if(width > 20){
+			width = '200';
+		}else{
+			width = width * 11;
+		}
+		writetxt('		<td class="listhead" style="width:' + width + 'px;">' + cmt + '</td>\r\n');
+	}
+}
+writetxt('		<td class="listhead" style="width:30px;">削除</td>\r\n');
+writetxt('	</tr>\r\n');
+
+writetxt('<!--■■■ 一覧繰り返し表示部 ■■■-->\r\n');
+//detail
+for(var linei = 0; linei < 10; linei++){
+	writetxt('	<tr>\r\n');
+	for(var i = 0; i < js.field.length; i++){
+		var name = js.field[i]['FIELD_NAME'];
+		var shortname = name.toLowerCase();
+		if(shortname.IndexOf('_') > 0){
+			shortname = shortname.substring(shortname.IndexOf('_') + 1);
+		}
+		if(shortname.lastIndexOf('_') > 0){
+			shortname = shortname.substring(0, shortname.lastIndexOf('_'));
+		}
+		if(shortname != 'insert' && shortname != 'update'){
+			var maxval = js.field[i]['FIELD_VALUE_MAX_NO_QUOTES'];
+			if(maxval == ''){
+				maxval = '&nbsp;';
+			}
+			var maxlen = js.field[i]['FIELD_SHOW_LENGTH'];
+			var width = '0' + maxlen;
+			if(width > 20){
+				width = '200';
+			}else{
+				width = width * 11;
+			}
+			//一つ目の項目にリンクを追加
+			if(i == 0)
+			{
+				maxval = '<A href="update.html" CLASS="link"><B>' + maxval + '</B></A>';
+			}
+			writetxt('		<td class="list1stline" style="width:' + width + 'px;">' + maxval + '</td>\r\n');
+		}
+	}
+	writetxt('		<td class="list2ndline" ALIGN="center"><INPUT TYPE="checkbox" NAME="chkDelete" VALUE="1">\r\n');
+	writetxt('	</tr>\r\n');
+}
+[!JS_END!]
+<!--■■■ コード一覧 終了■■■-->
+</TABLE>
+
+</BODY>
+</HTML>
+]]></main>
+	</template>
+
+
+
+	<template title="Sample,CreateTable.SQL" 
+		subdir="[#DB_NAME#][!LOWER!]\sql\"
+		filename="[#TABLE_NAME#][!LOWER!].sql"
+		language="SQLServerScript">
+		<field id="tablefields" addwhilenotend=",">[#FIELD_NAME#] [#FIELD_TYPE#][#FIELD_INGETER_DECIMAL#] [!JS!]
+if('[#FIELD_NULL#]' == 'NOT NULL'){
+	writetxt('NOT NULL');
+}
+[!JS_END!]</field>
+		<field id="tablepk">[!JS!]
+if('[#FIELD_PK#]' == 'PK'){
+	writetxt('[#FIELD_NAME#] ');
+}
+[!JS_END!]</field>
+		<main><![CDATA[-- プログラムＩＤ：[#TABLE_NAME#][!FIRSTUPPER!].sql
+-- プログラム名称：[#TABLE_COMMENT#]DataBean
+-- 処理概要　　　：
+-- 改版履歴　　　：[#CREATE_DATE#]　ver[#CREATE_VERSION#]  [#CREATE_AUTHOR#]        新規登録
+
+drop TABLE "[#TABLE_NAME#][!UPPER!]";
+CREATE TABLE "[#TABLE_NAME#][!UPPER!]" ( [#CLASS_FIELD_tablefields#] PK:[#CLASS_FIELD_tablepk#]);
+
+[!JS!]
+writemsg('\r\nyou can like this to output messgae in "CreateTable.SQL".\r\nFieldCount:' + js.field.length + '\r\n');
+writemsg('also you can use msgbox("msg"),if you selected JScriptHead.txt and valided it in ConfigTemplate.\r\n');
+writemsg('when null,no write to file with [js.writetxt = null;]\r\n');
+[!JS_END!]
+]]></main>
+	</template>
+
+
+
+</config>
